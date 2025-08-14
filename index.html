@@ -323,6 +323,11 @@
         showMsg('✅ Login successful! Redirecting...', true);
         setTimeout(() => alert("Redirect to dashboard"), 800);
 
+        setTimeout(() => {
+    window.location.href = "dashboard.html"; // yaha apne dashboard page ka naam dal do
+}, 800);
+
+
       } catch (err) {
         console.error(err);
         showError('⚠️ Network error');
@@ -377,3 +382,4 @@
   </script>
 </body>
 </html>
+
