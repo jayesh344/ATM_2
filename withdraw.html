@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Withdraw Cash</title>
+<style>
+  /* Reset & basics */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  body {
+    background: linear-gradient(270deg, #0f2027, #203a43, #2c5364);
+    background-size: 600% 600%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .withdraw-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px 50px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 255, 200, 0.4);
+    animation: fadeInScale 1s ease forwards;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .withdraw-card h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    letter-spacing: 1.2px;
+  }
+
+  #currentBalanceDisplay {
+    font-weight: 600;
+    font-size: 16px;
+    color: #00ffc3;
+    margin-bottom: 25px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  input[type="number"] {
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    transition: box-shadow 0.3s ease;
+  }
+  input[type="number"]:focus {
+    box-shadow: 0 0 10px #00ffc3;
+  }
+
+  button {
+    padding: 14px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    font-weight: 700;
+    font-size: 18px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+  }
+  button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .message {
+    margin-top: 18px;
+    font-size: 16px;
+    min-height: 24px;
+    font-weight: 600;
+  }
+  .success {
+    color: #6bff6b;
+  }
+  .error {
+    color: #ff6b6b;
+  }
+
+  .btn-back {
+    margin-top: 35px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    display: inline-block;
+  }
+  .btn-back:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  /* Responsive */
+  @media (max-width: 420px) {
+    .withdraw-card {
+      padding: 30px 25px;
+    }
+    input[type="number"] {
+      font-size: 16px;
+      padding: 10px 12px;
+    }
+    button {
+      font-size: 16px;
+      padding: 12px;
+    }
+    .withdraw-card h2 {
+      font-size: 24px;
+    }
+    #currentBalanceDisplay {
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="withdraw-card" role="main" aria-label="Withdraw Cash Form">
+  <h2>🏧 Withdraw Cash</h2>
+  <div id="currentBalanceDisplay" aria-live="polite">Current Balance: ₹50,000</div>
+  <form id="withdrawForm" novalidate>
+    <input type="number" id="withdrawAmount" name="withdrawAmount" placeholder="Enter amount to withdraw 💸" min="1" required />
+    <button type="submit" aria-label="Withdraw money">Withdraw</button>
+  </form>
+  <div class="message" id="messageArea" aria-live="polite"></div>
+  <a href="dashboard.html" class="btn-back" aria-label="Back to Dashboard">⬅ Back to Dashboard</a>
+</div>
+
+<script>
+  // Simulated current balance (from previous pages / backend)
+  let currentBalance = 50000;
+
+  const form = document.getElementById('withdrawForm');
+  const amountInput = document.getElementById('withdrawAmount');
+  const messageArea = document.getElementById('messageArea');
+  const currentBalanceDisplay = document.getElementById('currentBalanceDisplay');
+  const withdrawBtn = form.querySelector('button[type="submit"]');
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  function updateBalanceDisplay() {
+    currentBalanceDisplay.textContent = `Current Balance: ${formatCurrency(currentBalance)}`;
+  }
+
+  updateBalanceDisplay();
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    withdrawBtn.disabled = true; // disable button on submit
+
+    const amount = parseFloat(amountInput.value);
+
+    // Validation
+    if (isNaN(amount) || amount <= 0) {
+      messageArea.textContent = "❌ Please enter a valid positive amount!";
+      messageArea.className = "message error";
+      withdrawBtn.disabled = false;
+      return;
+    }
+    if (amount > currentBalance) {
+      messageArea.textContent = "⚠️ Insufficient balance! Your current balance is " + formatCurrency(currentBalance);
+      messageArea.className = "message error";
+      withdrawBtn.disabled = false;
+      return;
+    }
+    if (amount > 10000) {
+      messageArea.textContent = "⚠️ Maximum withdrawal limit per transaction is ₹10,000.";
+      messageArea.className = "message error";
+      withdrawBtn.disabled = false;
+      return;
+    }
+    if (amount % 100 !== 0) {
+      messageArea.textContent = "⚠️ Please enter amount in multiples of 100!";
+      messageArea.className = "message error";
+      withdrawBtn.disabled = false;
+      return;
+    }
+
+    // Confirmation popup before withdrawal
+    const confirmWithdraw = confirm(`Are you sure you want to withdraw ${formatCurrency(amount)}?`);
+    if (!confirmWithdraw) {
+      withdrawBtn.disabled = false;
+      return;
+    }
+
+    // Process withdrawal
+    currentBalance -= amount;
+
+    // Show success message with emoji
+    messageArea.textContent = `✅ Success! You withdrew ${formatCurrency(amount)}. Remaining balance: ${formatCurrency(currentBalance)}.`;
+    messageArea.className = "message success";
+
+    // Update balance display
+    updateBalanceDisplay();
+
+    // Clear input after success
+    amountInput.value = '';
+
+    withdrawBtn.disabled = false; // re-enable button
+  });
+</script>
+
+</body>
+</html>

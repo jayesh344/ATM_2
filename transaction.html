@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Transaction History</title>
+<style>
+  /* Reset & basics */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  body {
+    background: linear-gradient(270deg, #0f2027, #203a43, #2c5364);
+    background-size: 600% 600%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  h1 {
+    margin-bottom: 15px;
+    font-size: 32px;
+    letter-spacing: 1.5px;
+    text-align: center;
+    text-shadow: 0 0 10px #00ffc3;
+  }
+
+  .balance-summary {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00ffc3;
+    margin-bottom: 30px;
+    text-shadow: 0 0 8px #00bfa5;
+  }
+
+  .filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  select, input[type="date"] {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    box-shadow: 0 0 6px #00ffc3;
+    transition: box-shadow 0.3s ease;
+  }
+  select:hover, input[type="date"]:hover, select:focus, input[type="date"]:focus {
+    box-shadow: 0 0 12px #00ffcc;
+  }
+
+  .transaction-list {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 8px 30px rgba(0, 255, 200, 0.4);
+    padding: 15px 20px;
+    animation: fadeInScale 1s ease forwards;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 10px;
+    border-bottom: 1px solid rgba(0,255,200,0.2);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .transaction-item:last-child {
+    border-bottom: none;
+  }
+  .transaction-desc {
+    flex: 1 1 40%;
+  }
+  .transaction-type {
+    width: 90px;
+    text-align: center;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 5px 10px;
+    color: black;
+    user-select: none;
+  }
+  .deposit {
+    background: #6bff6b;
+    box-shadow: 0 0 8px #44cc44;
+  }
+  .withdraw {
+    background: #ff6b6b;
+    box-shadow: 0 0 8px #cc4444;
+  }
+  .transfer {
+    background: #ffb86b;
+    box-shadow: 0 0 8px #cc8800;
+  }
+  .transaction-date {
+    width: 130px;
+    text-align: right;
+    color: #a0f7e6cc;
+  }
+  .transaction-amount {
+    width: 130px;
+    text-align: right;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .positive {
+    color: #6bff6b;
+  }
+  .negative {
+    color: #ff6b6b;
+  }
+
+  /* Scrollbar */
+  .transaction-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  .transaction-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .transaction-list::-webkit-scrollbar-thumb {
+    background: #00ffc3aa;
+    border-radius: 8px;
+  }
+
+  /* Back button */
+  .btn-back {
+    margin-top: 30px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    display: inline-block;
+    align-self: center;
+  }
+  .btn-back:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .transaction-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .transaction-desc, .transaction-type, .transaction-date, .transaction-amount {
+      width: 100%;
+      text-align: left;
+    }
+    .transaction-type {
+      padding: 6px 12px;
+      margin-top: 2px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>📜 Transaction History</h1>
+<div class="balance-summary" aria-live="polite" id="totalBalance">Total Balance: ₹0</div>
+
+<div class="filters" role="region" aria-label="Filter Transactions">
+  <select id="filterType" aria-label="Filter by Transaction Type">
+    <option value="all">All Types</option>
+    <option value="deposit">Deposit 💵</option>
+    <option value="withdraw">Withdraw 💸</option>
+    <option value="transfer">Transfer 🔄</option>
+  </select>
+
+  <input type="date" id="filterDateFrom" aria-label="Filter From Date" />
+  <input type="date" id="filterDateTo" aria-label="Filter To Date" />
+  <button id="clearFilters" aria-label="Clear Filters" style="cursor:pointer; padding: 8px 16px; border-radius: 10px; border:none; background:#00bfa5; color:black; font-weight:700; box-shadow: 0 0 8px #00ffc3;">Clear Filters</button>
+</div>
+
+<div class="transaction-list" role="list" aria-label="List of Transactions" id="transactionList">
+  <!-- Transactions loaded dynamically here -->
+</div>
+
+<a href="dashboard.html" class="btn-back" aria-label="Back to Dashboard">⬅ Back to Dashboard</a>
+
+<script>
+  // Sample transactions data (date in yyyy-mm-dd)
+  let transactions = [
+    {amount: 12000, desc: "Salary Credit", date: "2025-08-15", type: "deposit"},
+    {amount: -2000, desc: "ATM Withdrawal", date: "2025-08-14", type: "withdraw"},
+    {amount: -1500, desc: "Grocery Shopping", date: "2025-08-13", type: "withdraw"},
+    {amount: 5000, desc: "Project Bonus", date: "2025-08-10", type: "deposit"},
+    {amount: -3000, desc: "Rent Payment", date: "2025-08-09", type: "withdraw"},
+    {amount: -500, desc: "Transfer to Friend", date: "2025-08-08", type: "transfer"},
+    {amount: 1000, desc: "Refund", date: "2025-08-07", type: "deposit"},
+    {amount: -700, desc: "Transfer to Savings", date: "2025-08-06", type: "transfer"},
+  ];
+
+  const totalBalanceEl = document.getElementById('totalBalance');
+  const transactionListEl = document.getElementById('transactionList');
+  const filterTypeEl = document.getElementById('filterType');
+  const filterDateFromEl = document.getElementById('filterDateFrom');
+  const filterDateToEl = document.getElementById('filterDateTo');
+  const clearFiltersBtn = document.getElementById('clearFilters');
+
+  // Format INR currency
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0}).format(amount);
+  }
+
+  // Calculate total balance from filtered transactions
+  function calculateBalance(filtered) {
+    return filtered.reduce((acc, tx) => acc + tx.amount, 0);
+  }
+
+  // Render transactions list
+  function renderTransactions(filteredTx) {
+    transactionListEl.innerHTML = '';
+    if (filteredTx.length === 0) {
+      transactionListEl.innerHTML = `<p style="text-align:center; padding:20px; color:#00ffc3; font-weight:700;">No transactions found! 🕵️‍♂️</p>`;
+      totalBalanceEl.textContent = 'Total Balance: ₹0';
+      return;
+    }
+    filteredTx.forEach(tx => {
+      const li = document.createElement('div');
+      li.className = 'transaction-item';
+
+      const desc = document.createElement('div');
+      desc.className = 'transaction-desc';
+      desc.textContent = tx.desc;
+
+      const type = document.createElement('div');
+      type.className = 'transaction-type ' + tx.type;
+      let typeEmoji = '';
+      if (tx.type === 'deposit') typeEmoji = '💵';
+      else if (tx.type === 'withdraw') typeEmoji = '💸';
+      else if (tx.type === 'transfer') typeEmoji = '🔄';
+      type.textContent = typeEmoji + ' ' + tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+
+      const date = document.createElement('div');
+      date.className = 'transaction-date';
+      date.textContent = new Date(tx.date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+
+      const amount = document.createElement('div');
+      amount.className = 'transaction-amount ' + (tx.amount >= 0 ? 'positive' : 'negative');
+      amount.textContent = formatCurrency(tx.amount);
+
+      li.append(desc, type, date, amount);
+      transactionListEl.appendChild(li);
+    });
+
+    totalBalanceEl.textContent = `Total Balance: ${formatCurrency(calculateBalance(filteredTx))}`;
+  }
+
+  // Filter transactions by type and date range
+  function filterTransactions() {
+    let filtered = [...transactions];
+
+    const typeFilter = filterTypeEl.value;
+    const fromDate = filterDateFromEl.value ? new Date(filterDateFromEl.value) : null;
+    const toDate = filterDateToEl.value ? new Date(filterDateToEl.value) : null;
+
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(tx => tx.type === typeFilter);
+    }
+    if (fromDate) {
+      filtered = filtered.filter(tx => new Date(tx.date) >= fromDate);
+    }
+    if (toDate) {
+      filtered = filtered.filter(tx => new Date(tx.date) <= toDate);
+    }
+
+    renderTransactions(filtered);
+  }
+
+  // Clear filters
+  clearFiltersBtn.addEventListener('click', () => {
+    filterTypeEl.value = 'all';
+    filterDateFromEl.value = '';
+    filterDateToEl.value = '';
+    renderTransactions(transactions);
+  });
+
+  // Event listeners for filters
+  filterTypeEl.addEventListener('change', filterTransactions);
+  filterDateFromEl.addEventListener('change', filterTransactions);
+  filterDateToEl.addEventListener('change', filterTransactions);
+
+  // Initialize render
+  renderTransactions(transactions);
+</script>
+
+</body>
+</html>

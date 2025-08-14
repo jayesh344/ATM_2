@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ATM Login</title>
+  <style>
+    :root {
+      --accent: #00ffc3;
+      --bg-gradient: linear-gradient(135deg, #00111f, #003d5b, #007089, #00a896);
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --border-color: rgba(255, 255, 255, 0.15);
+      --text-light: #f8fafc;
+      --text-muted: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-gradient);
+      background-size: 300% 300%;
+      animation: bgAnimation 8s ease infinite;
+      color: var(--text-light);
+    }
+
+    @keyframes bgAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 450px;
+      background: var(--glass-bg);
+      padding: 35px;
+      border-radius: 15px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(15px) saturate(180%);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 195, 0.15);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(25px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: #ffffff;
+      text-shadow: 0 0 5px var(--accent);
+    }
+
+    .field {
+      margin-bottom: 15px;
+      animation: fieldFade 0.6s ease both;
+      position: relative; /* For toggle button positioning */
+    }
+    .field:nth-child(1) { animation-delay: 0.2s; }
+    .field:nth-child(2) { animation-delay: 0.4s; }
+
+    @keyframes fieldFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .field label {
+      font-size: 15px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 0 5px rgba(255,255,255,0.05);
+    }
+
+    .field input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.9;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      outline: none;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    /* Show/hide toggle button */
+    .toggle-pin {
+      position: absolute;
+      right: 12px;
+      top: 35px;
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 0 6px;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toggle-pin:focus {
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button.primary {
+      background: linear-gradient(90deg, var(--accent), #00a6ff);
+      color: #042017;
+      box-shadow: 0 5px 15px rgba(0, 255, 195, 0.7);
+      transition: all 0.3s ease;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      flex: 1;
+    }
+
+    button.primary:hover {
+      box-shadow: 0 8px 25px rgba(0, 255, 195, 0.9);
+      transform: translateY(-3px) scale(1.05);
+    }
+
+    button.ghost {
+      background: linear-gradient(90deg, var(--accent), #00a6ff);
+      color: #042017;
+      box-shadow: 0 5px 15px rgba(0, 255, 195, 0.7);
+      transition: all 0.3s ease;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      flex: 1;
+    }
+
+    button.ghost:hover {
+      box-shadow: 0 8px 25px rgba(0, 255, 195, 0.9);
+      transform: translateY(-3px) scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    .msg {
+      height: 20px;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .hint {
+      display: block;
+      margin-top: 8px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* Shake effect for error */
+    .error {
+      animation: shake 0.4s;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 20px;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card" id="loginCard">
+    <h1>💳 ATM Login </h1>
+
+    <div class="field">
+      <label for="cardNo">💳 Card Number</label>
+      <input id="cardNo" type="text" maxlength="12" placeholder="Enter your card number" inputmode="numeric" />
+    </div>
+
+    <div class="field">
+      <label for="pin">🔒 PIN</label>
+      <input id="pin" type="password" maxlength="6" placeholder="Enter your PIN" inputmode="numeric" />
+      <button type="button" class="toggle-pin" id="togglePinBtn" aria-label="Show PIN">
+        <!-- Eye icon (show) -->
+        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="loginBtn" onclick="login()">🚀 Login</button>
+      <button class="ghost" onclick="guestLogin()">👤 Guest</button>
+    </div>
+
+    <p id="msg" class="msg"></p>
+    <small class="hint">💡 Demo: <strong>1001 / 1234</strong></small>
+  </div>
+
+  <script>
+    const DEMO = [
+      { card: '1001', pin: '1234', name: 'Ramesh Kumar' },
+      { card: '1002', pin: '4321', name: 'Seema Devi' }
+    ];
+
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    function showMsg(text, ok = true) {
+      const el = document.getElementById('msg');
+      el.innerText = text;
+      el.style.color = ok ? '#a7f3d0' : '#ffb3b3';
+    }
+
+    function valid(card, pin) {
+      if (!card || card.trim().length < 3) { showError('⚠️ Enter valid card number'); return false; }
+      if (!pin || pin.trim().length < 4) { showError('⚠️ Enter 4+ digit PIN'); return false; }
+      return true;
+    }
+
+    function showError(msg) {
+      showMsg(msg, false);
+      const card = document.getElementById('loginCard');
+      card.classList.add('error');
+      setTimeout(() => card.classList.remove('error'), 400);
+    }
+
+    async function login() {
+      const card = document.getElementById('cardNo').value.trim();
+      const pin = document.getElementById('pin').value.trim();
+      if (!valid(card, pin)) return;
+
+      showMsg('⏳ Please wait...', true);
+      document.getElementById('loginBtn').disabled = true;
+
+      try {
+        // Check if card exists first
+        const user = DEMO.find(u => u.card === card);
+
+        if (!user) {
+          // Card number not found
+          attempts++;
+          if (attempts >= maxAttempts) {
+            showError("🚫 Too many attempts, please wait 30 seconds.");
+            document.getElementById('loginBtn').disabled = true;
+            setTimeout(() => {
+              attempts = 0;
+              document.getElementById('loginBtn').disabled = false;
+              showMsg('');
+            }, 30000);
+          } else {
+            showError(`❌ Card number not registered. Attempts left: ${maxAttempts - attempts}`);
+          }
+          return;
+        }
+
+        // Card found, check PIN
+        if (user.pin !== pin) {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            showError("🚫 Too many attempts, please wait 30 seconds.");
+            document.getElementById('loginBtn').disabled = true;
+            setTimeout(() => {
+              attempts = 0;
+              document.getElementById('loginBtn').disabled = false;
+              showMsg('');
+            }, 30000);
+          } else {
+            showError(`❌ PIN incorrect. Attempts left: ${maxAttempts - attempts}`);
+          }
+          return;
+        }
+
+        // If here, login success
+        attempts = 0; // reset attempts
+        localStorage.setItem('atm_token', 'demo-' + user.card);
+        localStorage.setItem('atm_user', JSON.stringify(user));
+        showMsg('✅ Login successful! Redirecting...', true);
+        setTimeout(() => alert("Redirect to dashboard"), 800);
+
+      } catch (err) {
+        console.error(err);
+        showError('⚠️ Network error');
+      } finally {
+        if(attempts < maxAttempts) document.getElementById('loginBtn').disabled = false;
+      }
+    }
+
+    function guestLogin() {
+      document.getElementById('cardNo').value = '1001';
+      document.getElementById('pin').value = '1234';
+      login();
+    }
+
+    // Show/Hide PIN toggle logic
+    const toggleBtn = document.getElementById('togglePinBtn');
+    const pinInput = document.getElementById('pin');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    // SVG paths for eye and eye-off (hide) icons
+    const eyeSVG = `
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    `;
+    const eyeOffSVG = `
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.49 21.49 0 0 1 5.94-7.94"></path>
+      <path d="M1 1l22 22"></path>
+      <path d="M10.59 10.59a3 3 0 0 0 4.24 4.24"></path>
+      <path d="M9.88 5.88a10.93 10.93 0 0 1 10.12 10.12"></path>
+    `;
+
+    toggleBtn.addEventListener('click', () => {
+      if (pinInput.type === 'password') {
+        pinInput.type = 'text';
+        toggleBtn.setAttribute('aria-label', 'Hide PIN');
+        eyeIcon.innerHTML = eyeOffSVG;
+      } else {
+        pinInput.type = 'password';
+        toggleBtn.setAttribute('aria-label', 'Show PIN');
+        eyeIcon.innerHTML = eyeSVG;
+      }
+    });
+
+    // Input validation improvements: allow digits only for cardNo and pin
+    document.getElementById('cardNo').addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    document.getElementById('pin').addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+  </script>
+</body>
+</html>

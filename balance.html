@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Account Balance</title>
+<style>
+  /* Reset & basics */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  body {
+    background: linear-gradient(270deg, #0f2027, #203a43, #2c5364);
+    background-size: 600% 600%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .balance-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px 50px;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 255, 200, 0.4);
+    animation: fadeInScale 1s ease forwards;
+    margin-bottom: 20px;
+  }
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .balance-card h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    letter-spacing: 1.2px;
+  }
+  .balance-amount {
+    font-size: 56px;
+    font-weight: 900;
+    color: #00ffc3;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    animation: pulseGlow 2s infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% {
+      text-shadow: 0 0 10px #00ffc3, 0 0 20px #00ffc3;
+    }
+    50% {
+      text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    }
+  }
+
+  .last-updated {
+    font-size: 14px;
+    color: #a0f7e6cc;
+    margin-bottom: 25px;
+  }
+
+  /* Transaction Summary Styles */
+  .transaction-summary {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 0;
+    margin-top: 0;
+    text-align: left;
+    max-width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 255, 200, 0.25);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .transaction-summary h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #00ffc3;
+    letter-spacing: 1px;
+  }
+  .transaction-summary ul {
+    list-style: none;
+    max-height: 320px;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  .transaction-summary li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0, 255, 200, 0.15);
+    font-size: 14px;
+    color: #c0f8e8;
+    line-height: 1.4;
+  }
+  .transaction-summary li:last-child {
+    border-bottom: none;
+  }
+
+  /* Add Transaction Form */
+  .add-transaction {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 20px 25px;
+    max-width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 255, 200, 0.25);
+    margin-bottom: 0;
+    color: #00ffc3;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .add-transaction h3 {
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+  .add-transaction label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .add-transaction input {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+  /* Remove margin-bottom from button here, because button is outside the form */
+
+  /* Container flex for side-by-side layout */
+  .flex-container {
+    display: flex;
+    gap: 20px;
+    max-width: 760px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Dono main div ka equal height */
+  .equal-height {
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    flex: 1 1 350px;
+    height: 420px; /* adjust height as needed */
+  }
+
+  /* Buttons container side-by-side below */
+  .btn-container {
+    display: flex;
+    gap: 20px;
+    max-width: 760px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 15px;
+  }
+
+  /* Button styling */
+  .add-btn, .export-btn {
+    flex: 1;
+    padding: 12px 0;
+    font-weight: 700;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    color: black;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+  }
+  .add-btn:hover, .export-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  .btn-back {
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    margin-top: 30px;
+  }
+  .btn-back:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  /* Responsive */
+  @media (max-width: 400px) {
+    .balance-card {
+      max-width: 90vw;
+      padding: 30px 20px;
+    }
+    .balance-amount {
+      font-size: 42px;
+    }
+    .btn-back, .export-btn, .add-btn {
+      padding: 10px 25px;
+      font-size: 14px;
+    }
+    .flex-container {
+      flex-direction: column;
+      max-width: 100%;
+      height: auto;
+    }
+    .equal-height {
+      height: auto;
+    }
+    .btn-container {
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .add-btn, .export-btn {
+      flex: unset;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="balance-card" role="main" aria-label="Account Balance Information">
+  <h2>💰 Your Account Balance</h2>
+  <div class="balance-amount" id="balanceAmount">₹ 0</div>
+  <div class="last-updated" id="lastUpdated">Last updated: --</div>
+</div>
+
+<!-- Side-by-side container with equal height -->
+<div class="flex-container">
+
+  <!-- Add New Transaction Form -->
+  <div class="add-transaction equal-height" aria-label="Add New Transaction">
+    <h3>➕ Add New Transaction</h3>
+    <form id="transactionForm" style="flex-grow:1; display:flex; flex-direction: column;">
+      <label for="amount">Amount (use negative for debit)</label>
+      <input type="number" id="amount" name="amount" required placeholder="Example: 500 or -200" />
+      <label for="desc">Description</label>
+      <input type="text" id="desc" name="desc" required placeholder="E.g. Grocery, Salary Credit" />
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" required />
+      <!-- Button removed from here -->
+    </form>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="transaction-summary equal-height" aria-label="Recent Transactions">
+    <h3>📋 Recent Transactions</h3>
+    <ul id="transactionList">
+      <!-- Transactions dynamically inserted here -->
+    </ul>
+  </div>
+
+</div>
+
+<!-- Buttons side by side below both divs -->
+<div class="btn-container" role="group" aria-label="Action Buttons">
+  <button class="add-btn" id="addTransactionBtn" type="button" aria-label="Add Transaction Button">
+    ➕ Add Transaction
+  </button>
+  <button class="export-btn" id="exportCsvBtn" aria-label="Export Transactions as CSV">
+    📥 Export Transactions CSV
+  </button>
+</div>
+
+<a href="dash.html" class="btn-back" aria-label="Back to dashboard">⬅ Back to Dashboard</a>
+
+<script>
+  // Format currency helper
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  // Transactions Data
+  let transactions = [
+    { amount: -500, desc: "ABC Store", date: "2025-08-15" },
+    { amount: 1200, desc: "Salary Credit", date: "2025-08-14" },
+    { amount: -300, desc: "Grocery", date: "2025-08-13" }
+  ];
+
+  // Calculate current balance
+  function calculateBalance() {
+    return transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  }
+
+  // Update balance UI with animation
+  const balanceEl = document.getElementById('balanceAmount');
+  let animationStartTime = null;
+  let animationDuration = 1500;
+  function animateBalance(finalBalance, timestamp) {
+    if (!animationStartTime) animationStartTime = timestamp;
+    const progress = timestamp - animationStartTime;
+    const progressRatio = Math.min(progress / animationDuration, 1);
+    const value = Math.floor(progressRatio * finalBalance);
+    balanceEl.textContent = formatCurrency(value);
+    if (progress < animationDuration) {
+      requestAnimationFrame(ts => animateBalance(finalBalance, ts));
+    } else {
+      balanceEl.textContent = formatCurrency(finalBalance);
+      animationStartTime = null; // reset for next animation
+    }
+  }
+
+  // Render transactions list
+  const transactionList = document.getElementById('transactionList');
+  function renderTransactions() {
+    transactionList.innerHTML = '';
+    transactions.forEach(tx => {
+      const li = document.createElement('li');
+      const sign = tx.amount < 0 ? "−" : "+";
+      const color = tx.amount < 0 ? "#ff6b6b" : "#6bff6b";
+      li.style.color = color;
+      const formattedDate = new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      li.textContent = `${sign} ${formatCurrency(Math.abs(tx.amount))} at ${tx.desc} (${formattedDate})`;
+      transactionList.appendChild(li);
+    });
+  }
+
+  // Update last updated time
+  const lastUpdatedEl = document.getElementById('lastUpdated');
+  function updateLastUpdated() {
+    const now = new Date();
+    lastUpdatedEl.textContent = `Last updated: ${now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}`;
+  }
+
+  // Initialize UI
+  function init() {
+    renderTransactions();
+    updateLastUpdated();
+    animateBalance(calculateBalance(), performance.now());
+  }
+  init();
+
+  // Since Add Transaction button is outside form, trigger form submit manually
+  document.getElementById('addTransactionBtn').addEventListener('click', () => {
+    document.getElementById('transactionForm').requestSubmit();
+  });
+
+  // Add Transaction Form Submit Handler
+  document.getElementById('transactionForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const amountInput = document.getElementById('amount');
+    const descInput = document.getElementById('desc');
+    const dateInput = document.getElementById('date');
+
+    const amount = parseFloat(amountInput.value);
+    const desc = descInput.value.trim();
+    const date = dateInput.value;
+
+    if (isNaN(amount) || !desc || !date) {
+      alert("Please fill all fields correctly.");
+      return;
+    }
+
+    // Add new transaction at the start of the array (newest first)
+    transactions.unshift({ amount, desc, date });
+
+    // Update UI
+    renderTransactions();
+    updateLastUpdated();
+    animateBalance(calculateBalance(), performance.now());
+
+    // Clear form
+    amountInput.value = '';
+    descInput.value = '';
+    dateInput.value = '';
+  });
+
+  // Export CSV Function
+  function exportToCSV() {
+    if (transactions.length === 0) {
+      alert("No transactions to export.");
+      return;
+    }
+    const csvRows = [];
+    // Header
+    csvRows.push("Amount,Description,Date");
+    // Data rows
+    transactions.forEach(tx => {
+      const descEscaped = `"${tx.desc.replace(/"/g, '""')}"`;
+      csvRows.push(`${tx.amount},${descEscaped},${tx.date}`);
+    });
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    // Create hidden link and click to download
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.href = url;
+    a.download = 'transactions.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Attach export button handler
+  document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+</script>
+
+</body>
+</html>

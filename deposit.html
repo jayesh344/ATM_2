@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Deposit Funds</title>
+<style>
+  /* Reset & basics */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  body {
+    background: linear-gradient(270deg, #0f2027, #203a43, #2c5364);
+    background-size: 600% 600%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .deposit-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px 50px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 255, 200, 0.4);
+    animation: fadeInScale 1s ease forwards;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .deposit-card h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    letter-spacing: 1.2px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  input[type="number"] {
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    transition: box-shadow 0.3s ease;
+  }
+  input[type="number"]:focus {
+    box-shadow: 0 0 10px #00ffc3;
+  }
+
+  button {
+    padding: 14px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    font-weight: 700;
+    font-size: 18px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+  }
+  button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  .message {
+    margin-top: 18px;
+    font-size: 16px;
+    min-height: 24px;
+    font-weight: 600;
+  }
+  .success {
+    color: #6bff6b;
+  }
+  .error {
+    color: #ff6b6b;
+  }
+
+  .btn-back {
+    margin-top: 35px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    color: black;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    display: inline-block;
+  }
+  .btn-back:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  /* Transaction History Box */
+  .transaction-history {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    max-width: 400px;
+    width: 100%;
+    margin-top: 25px;
+    padding: 20px 25px;
+    box-shadow: 0 8px 30px rgba(0, 255, 200, 0.4);
+    color: #00ffc3;
+    font-weight: 600;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .transaction-history h3 {
+    margin-bottom: 12px;
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+  .transaction-history ul {
+    list-style: none;
+  }
+  .transaction-history li {
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  /* Receipt Download Button */
+  #downloadReceiptBtn {
+    margin-top: 15px;
+    padding: 12px;
+    background: linear-gradient(45deg, #00ffc3, #00bfa5);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    color: black;
+    box-shadow: 0 6px 15px rgba(0,255,200,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    display: none; /* hidden initially */
+  }
+  #downloadReceiptBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,255,200,0.8);
+  }
+
+  /* Security Reminder */
+  .security-reminder {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #a0f7e6cc;
+    font-style: italic;
+  }
+
+  /* Responsive */
+  @media (max-width: 420px) {
+    .deposit-card {
+      padding: 30px 25px;
+    }
+    input[type="number"] {
+      font-size: 16px;
+      padding: 10px 12px;
+    }
+    button {
+      font-size: 16px;
+      padding: 12px;
+    }
+    .deposit-card h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .transaction-history {
+      max-height: 150px;
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="deposit-card" role="main" aria-label="Deposit Funds Form">
+  <h2>💵 Deposit Funds</h2>
+  <form id="depositForm" novalidate>
+    <input type="number" id="depositAmount" name="depositAmount" placeholder="Enter amount to deposit 💰" min="1" required />
+    <button type="submit" aria-label="Deposit money">Deposit</button>
+  </form>
+  <div class="security-reminder" aria-live="polite">⚠️ Ensure the amount entered is correct before submitting.</div>
+  <div class="message" id="messageArea" aria-live="polite"></div>
+
+  <button id="downloadReceiptBtn" aria-label="Download deposit receipt">📄 Download Receipt</button>
+
+  <a href="dashboard.html" class="btn-back" aria-label="Back to Dashboard">⬅ Back to Dashboard</a>
+</div>
+
+<div class="transaction-history" aria-label="Transaction History">
+  <h3>📝 Recent Transactions</h3>
+  <ul id="transactionList">
+    <!-- transactions inserted here -->
+  </ul>
+</div>
+
+<script>
+  let currentBalance = 50000;
+  let transactions = [];
+
+  const form = document.getElementById('depositForm');
+  const amountInput = document.getElementById('depositAmount');
+  const messageArea = document.getElementById('messageArea');
+  const transactionList = document.getElementById('transactionList');
+  const downloadBtn = document.getElementById('downloadReceiptBtn');
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  function renderTransactions() {
+    transactionList.innerHTML = '';
+    transactions.slice().reverse().forEach(tx => {
+      const li = document.createElement('li');
+      li.textContent = `${tx.date} - Deposited ${formatCurrency(tx.amount)}`;
+      transactionList.appendChild(li);
+    });
+  }
+
+  function createReceipt(deposit) {
+    return `
+      Deposit Receipt\n
+      Date: ${deposit.date}\n
+      Amount Deposited: ${formatCurrency(deposit.amount)}\n
+      New Balance: ${formatCurrency(currentBalance)}
+    `;
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const amount = parseFloat(amountInput.value);
+
+    // Min and Max validation
+    if (isNaN(amount) || amount < 100) {
+      messageArea.textContent = "❌ Minimum deposit amount is ₹100.";
+      messageArea.className = "message error";
+      downloadBtn.style.display = 'none';
+      return;
+    }
+    if (amount > 100000) {
+      messageArea.textContent = "❌ Maximum deposit amount is ₹1,00,000.";
+      messageArea.className = "message error";
+      downloadBtn.style.display = 'none';
+      return;
+    }
+
+    // Process deposit
+    currentBalance += amount;
+
+    // Add transaction
+    const now = new Date();
+    const deposit = {
+      amount,
+      date: now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+    };
+    transactions.push(deposit);
+
+    renderTransactions();
+
+    // Show success message
+    messageArea.textContent = `✅ Success! You deposited ${formatCurrency(amount)}. New balance: ${formatCurrency(currentBalance)}.`;
+    messageArea.className = "message success";
+
+    // Show receipt download button
+    downloadBtn.style.display = 'inline-block';
+
+    // Clear input
+    amountInput.value = '';
+
+    // Save last deposit for receipt
+    downloadBtn.dataset.lastDeposit = JSON.stringify(deposit);
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if (!downloadBtn.dataset.lastDeposit) return;
+
+    const deposit = JSON.parse(downloadBtn.dataset.lastDeposit);
+    const receiptText = createReceipt(deposit);
+    const blob = new Blob([receiptText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Deposit_Receipt_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Initial render empty
+  renderTransactions();
+</script>
+
+</body>
+</html>
